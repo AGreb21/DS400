@@ -1,2 +1,4 @@
-DS400-Bayesian-Statistics
-Projects Bayesian Statistics (DS400)
+# DS 400: Bayesian Statistics
+
+This repository is for DS 400: Bayesian Statistics. 
+
