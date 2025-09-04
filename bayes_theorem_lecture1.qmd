@@ -25,18 +25,50 @@ data(fake_news)
 
 #### Your Turn
 
-💻 📈 Take 10 minutes to do some some exploratory data analysis below and we will chat about best practices. Keep in mind two variables that we will focus on, type and title_has_exc
+💻 📈 Take 10 minutes to do some some exploratory data analysis below and we will chat about best practices. Keep in mind two variables that we will focus on, type and title_has_excl
 
 ```{r}
+# Quick structure and summary
+str(fake_news)
+summary(fake_news[, c("type", "title_has_excl")])
 
+# Missing values
+colSums(is.na(fake_news[, c("type", "title_has_excl")]))
 ```
 
 ```{r}
-
+ggplot(fake_news, aes(x = type)) +
+  geom_bar(fill = "steelblue") +
+  labs(
+    title = "Distribution of Article Types",
+    x = "Article Type",
+    y = "Count"
+  ) +
+  theme_minimal()
 ```
 
 ```{r}
+ggplot(fake_news, aes(x = (title_has_excl))) +
+  geom_bar(fill = "darkorange") +
+  labs(
+    title = "Titles with Exclamation Marks",
+    x = "Has Exclamation?",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
 
+```{r}
+ggplot(fake_news, aes(x = type, fill = as.factor(title_has_excl))) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "Exclamation Marks by Article Type",
+    x = "Article Type",
+    y = "Percent within Type",
+    fill = "Has Exclamation?"
+  ) +
+  theme_minimal()
 ```
 
 ```{r}
@@ -178,11 +210,99 @@ Come up with your own P(B\|A) and share with the class
 Let's choose one, generate synthetic data, and model
 
 ```{r}
+#Generarting random data set for being vacation and going to the beach
+set.seed(123)  # reproducibility
+n <- 1000      # sample size
 
+# Define probabilities
+p_vacation <- 0.3
+p_beach_given_vacation <- 0.8
+p_beach_given_not_vacation <- 0.2
+
+# Generate vacation column (yes/no)
+vacation <- sample(
+  c("yes", "no"),
+  size = n,
+  replace = TRUE,
+  prob = c(p_vacation, 1 - p_vacation)
+)
+
+# Generate beach_today column (yes/no) conditional on vacation
+beach_today <- sapply(vacation, function(v) {
+  if (v == "yes") {
+    sample(c("yes", "no"), size = 1,
+           prob = c(p_beach_given_vacation, 1 - p_beach_given_vacation))
+  } else {
+    sample(c("yes", "no"), size = 1,
+           prob = c(p_beach_given_not_vacation, 1 - p_beach_given_not_vacation))
+  }
+})
+
+# Combine into data frame
+fake_beach_data <- data.frame(
+  beach_today = factor(beach_today, levels = c("no", "yes")),
+  vacation = factor(vacation, levels = c("no", "yes"))
+)
+
+# Preview first rows
+head(fake_beach_data, 10)
+
+# Summary counts
+table(fake_beach_data$vacation, fake_beach_data$beach_today)
 ```
 
 ```{r}
+view(fake_beach_data)
 
+table(fake_beach_data$beach_today)
+```
+
+```{r}
+ggplot(fake_beach_data, aes(x = beach_today, fill = vacation)) +
+  geom_bar()
+```
+
+P(B) = This person went to the beach today
+
+```{r}
+fake_beach_data %>% 
+  tabyl(beach_today) %>% 
+  adorn_totals("row")
+```
+
+```{r}
+probability_went_to_beach <- 0.36
+```
+
+P(A) = This person is on vacation
+
+```{r}
+fake_beach_data %>% 
+  tabyl(vacation) %>% 
+  adorn_totals("row")
+```
+
+```{r}
+probabilty_on_vacation <- 0.30
+```
+
+L(B\|A) = P(A\|B) - The probability this person is on vacation given they went to the beach
+
+```{r}
+fake_beach_data %>% 
+  tabyl(beach_today, vacation) %>% 
+  adorn_percentages("row")
+```
+
+```{r}
+likelihood_went_to_beach_on_vacation <- .63
+```
+
+P(B\|A) = What is the probability this person went to the beach given they are on vacation
+
+```{r}
+(probability_went_to_beach * likelihood_went_to_beach_on_vacation) / probabilty_on_vacation
+probabilty_on_vacation
 ```
 
 ### Video
