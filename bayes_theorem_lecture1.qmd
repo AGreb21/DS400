@@ -323,6 +323,10 @@ Exploratory Analysis
 
 ```
 
+```{r}
+
+```
+
 1\) Build a prior probability model (an unconditional probability model) with probabilities for where the person is from
 
 -   Letting S denote the person is from the south
@@ -352,42 +356,152 @@ Exploratory Analysis
 Pop vs Soda - In Class
 
 ```{r}
+?pop_vs_soda
+summary(pop_vs_soda)
+# Count of responses by region
+pop_vs_soda %>%
+  count(region) %>%
+  arrange(desc(n))
 
+# Count of responses by word_for_cola
+pop_vs_soda %>%
+  count(word_for_cola) %>%
+  arrange(desc(n))
+
+# Cross-tabulation: region vs word_for_cola
+pop_vs_soda %>%
+  count(region, word_for_cola) %>%
+  pivot_wider(names_from = word_for_cola, values_from = n, values_fill = 0)
+
+# Proportion of "pop" vs "not pop"
+pop_vs_soda %>%
+  summarise(
+    total = n(),
+    pop_count = sum(pop),
+    pop_prop = mean(pop)
+  )
 ```
 
 Exploratory Analysis
 
 ```{r}
+# Visualization: Distribution of word_for_cola by region
+ggplot(pop_vs_soda, aes(x = region, fill = word_for_cola)) +
+  geom_bar() +
+  labs(
+    title = "Regional Preferences for Word for Cola",
+    x = "Region",
+    y = "Count"
+  ) +
+  theme_minimal()
 
+# Visualization: Just "pop" usage by region
+ggplot(pop_vs_soda, aes(x = region, fill = pop)) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "Proportion Saying 'Pop' by Region",
+    x = "Region",
+    y = "Proportion"
+  ) +
+  theme_minimal()
 ```
 
 Prior Probability
 
-```{r}
+P(B) Prior probability the person is from the south
 
+```{r}
+pop_vs_soda %>%
+  tabyl(region)
+
+```
+
+```{r}
+priors <- c(
+  south = 0.39,
+  midwest = 0.21,
+  northeast = 0.17,
+  west = 0.24
+)
+
+priors
+```
+
+```{r}
+prior_probability_from_south <- 0.39
 ```
 
 2\) Regional Likelihoods
 
 ```{r}
-
+likelihoods <- pop_vs_soda %>%
+  tabyl(pop, region) %>% 
+  adorn_percentages("col") %>% 
+  filter(pop == "TRUE") %>%
+  select(-pop) %>% 
+  unlist()
+  
+likelihoods
 ```
 
 ```{r}
-
+probability_says_pop_given_from_south <- 0.079
 ```
 
 3\) Marginal prior probability that a person uses the word pop
 
 ```{r}
-
-```
-
-```{r}
-
+prior_probabilty_says_pop <- sum(priors*likelihoods)
+prior_probabilty_says_pop
 ```
 
 4\) Finding our posterior probability P(S\|A)
+
+```{r}
+(prior_probability_from_south * probability_says_pop_given_from_south) / prior_probabilty_says_pop 
+```
+
+### Final challenge: map
+
+```{r}
+# Load libraries
+library(dplyr)
+library(ggplot2)
+library(maps)       # US map data
+library(mapdata)    # more detailed map outlines
+
+# Step 1: Summarise % of "pop" users by state
+state_pop <- pop_vs_soda %>%
+  group_by(state) %>%
+  summarise(
+    total = n(),
+    pop_count = sum(pop),
+    pop_percent = 100 * mean(pop)
+  )
+
+# Step 2: Get US map data
+us_states <- map_data("state")
+
+# Step 3: Prepare state names for joining
+# map_data("state") has lowercase state names
+state_pop <- state_pop %>%
+  mutate(state = tolower(state))
+
+# Step 4: Join dataset with map
+map_df <- us_states %>%
+  left_join(state_pop, by = c("region" = "state"))
+
+# Step 5: Plot map
+ggplot(map_df, aes(long, lat, group = group, fill = pop_percent)) +
+  geom_polygon(color = "white") +
+  scale_fill_viridis_c(option = "plasma", na.value = "grey90") +
+  labs(
+    title = "Percentage of People Saying 'Pop' by State",
+    fill = "% Saying 'Pop'"
+  ) +
+  coord_fixed(1.3) +
+  theme_minimal()
+```
 
 ```{r}
 
