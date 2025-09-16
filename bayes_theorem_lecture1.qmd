@@ -418,9 +418,9 @@ pop_vs_soda %>%
 
 ```{r}
 priors <- c(
-  south = 0.39,
   midwest = 0.21,
   northeast = 0.17,
+  south = 0.39,
   west = 0.24
 )
 
