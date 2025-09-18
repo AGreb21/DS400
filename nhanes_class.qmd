@@ -242,3 +242,37 @@ ggplot(age_df, aes(x = DIQ010, fill = RIDAGEYR)) +
   ) +
   theme_minimal()
 ```
+
+Prior probability someone has diabetes P(B)
+
+```{r}
+age_df %>% 
+  tabyl(DIQ010)
+
+prior_probability_has_diabetes <- 0.10
+```
+
+Prior probability someone is over 40 P(A)
+
+```{r}
+age_df %>% 
+  tabyl(RIDAGEYR)
+
+prior_probability_over_40 <- 0.43
+```
+
+Determine the likelihood of being over 40 and having diabetes
+
+```{r}
+age_df %>% 
+  tabyl(RIDAGEYR, DIQ010) %>%
+  adorn_percentages("col")
+
+likelihood_has_diabetes_over_40 <- 0.94
+```
+
+Determine posterior probability via Bayes theorem P(B\|A)
+
+```{r}
+(likelihood_has_diabetes_over_40 * prior_probability_has_diabetes) / prior_probability_over_40
+```
