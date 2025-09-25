@@ -1,0 +1,45 @@
+---
+title: "Class Challenge"
+format: html
+editor: visual
+---
+
+## Challenge
+
+```{r}
+library(tidyverse)
+library(bayesrules)
+```
+
+The average attendance of an MLB game
+
+```{r}
+plot_gamma(shape = 30000, rate = 1, mean = TRUE, mode = TRUE)
+```
+
+```{r}
+y_mlb = c(31876,30500,33210,28900,35000,31050,32000,32800,29500,34000,
+         36000,30000,31500,33000,31000,32500,33500,29900,34500,32200)
+mlb_attendance <- data.frame(
+  game = 1:length(y_mlb),
+  attendance = y_mlb
+)
+```
+
+```{r}
+ggplot(data = mlb_attendance, aes(x = attendance)) +
+  geom_histogram()
+```
+
+```{r}
+length(y_mlb)
+sum(y_mlb)
+```
+
+```{r}
+summarize_gamma_poisson(shape = 30000, rate = 1, sum_y = 642936, n = 20)
+```
+
+```{r}
+plot_gamma_poisson(shape = 30000, rate = 1, sum_y = 642936, n = 20)
+```
